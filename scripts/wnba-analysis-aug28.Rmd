@@ -1,0 +1,80 @@
+---
+title: "WNBA analysis - aug 28"
+output: 
+---
+
+Analysis of WNBA data from HerHoopStats.com and ESPN
+Player salaries for 2023 and stats from 2022
+
+```{r}
+library(tidyverse)
+```
+
+Import the file wnba2023.csv from our data folder
+```{r}
+wnba <- read_csv("data/wnba2023.csv")
+```
+
+Questions of the data: 
+1. How many rows of data are there? 148 rows
+2. What is one row? 1 row is 1 wnba player (as of pre-season)
+3. What is in every column
+  salary is number which is good
+  height needs to be converted to a number if we want to use it
+  jersey number is stored as text
+  
+Run-through of the basic functions for select, filter, arrange:
+```{r}
+wnba %>% 
+  select(player_name, salary_2023) %>% 
+  filter(salary_2023 > 100000) %>% 
+  arrange(desc(salary_2023))
+
+# this will return the exact same results, even though the order is different:
+wnba %>% 
+  arrange(desc(salary_2023)) %>% 
+  filter(salary_2023 > 100000) %>% 
+  select(player_name, salary_2023)
+
+# salaries in descending order by team: 
+wnba %>% 
+  arrange(team, desc(salary_2023))
+
+```
+
+Run through summary numbers: 
+```{r}
+# the $ is base R vernacular and identifies a column within a dataset to sum, etc
+sum(wnba$salary_2023)
+mean(wnba$salary_2023)
+median(wnba$salary_2023)
+
+# here's how we use these functions within the tidyverse scheme
+wnba %>% summarise(sum(salary_2023))
+wnba %>% summarise(mean(salary_2023))
+wnba %>% summarise(median(salary_2023))
+
+# string them all together
+wnba %>% 
+  summarise(sum(salary_2023), mean(salary_2023), median(salary_2023))
+```
+
+
+Run through group_by: 
+```{r}
+
+wnba %>% 
+  group_by(team) %>% 
+  summarise(sum_sal = sum(salary_2023), mean_sal = mean(salary_2023), median_sal = median(salary_2023)) %>% 
+  arrange(desc(mean_sal))
+
+```
+
+
+Homework questions: 
+1. Which position has the highest average (mean) salary? 
+2. How many players play for each team? hint: the summary function you want to use is n()
+3. Which college has sent the most players to the wnba? 
+4. How many players are from outside of the U.S.?
+5. Do international players make a higher or lower average salary than players from the US?
+6. Which position is the most common? 
