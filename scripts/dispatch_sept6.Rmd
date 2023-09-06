@@ -1,0 +1,45 @@
+---
+title: "Dispatch"
+output: 
+---
+
+Analysis of Columbia, MO police dispatch data from https://www.como.gov/CMS/911dispatch/police.php
+Downloaded on 9/6/2023 for the previous 3 years (9/6/2020 - 9/6/2023)
+
+```{r}
+library(tidyverse)
+```
+
+Bring in the data: 
+```{r}
+?read_csv
+
+dispatch <- read_csv("data/como_dispatch.csv")
+```
+
+Main questions and vetting the data. 
+1. How many rows of data? *85,812*
+2. What is one row? *one row is one incident where officer(s) were dispatched*
+3. What's in each column? 
+
+```{r}
+# Check InNum: 
+dispatch %>% 
+  count(InNum) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 1)
+
+dispatch %>% 
+  filter(InNum == 2022208992)
+# there's some dirty data here - duplicate rows with slight variations (maybe a correction creates a duplicate record?) - ask PD
+```
+
+
+Homework questions: 
+
+Go through each column using the count() function: 
+Is there any messy data? Are there any columns that need to be converted and/or cleaned for analysis? 
+How many categories are in the ExtNatureDisplayName column? Which is the most common? 
+Which day of the week has the most dispatches? 
+Which PolArea had the most dispatches? 
+Think like a journalist and come up with five questions you want to ask this data. 
