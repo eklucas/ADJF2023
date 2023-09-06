@@ -78,3 +78,63 @@ Homework questions:
 4. How many players are from outside of the U.S.?
 5. Do international players make a higher or lower average salary than players from the US?
 6. Which position is the most common? 
+
+```{r}
+wnba %>% 
+  group_by(position) %>% 
+  summarise(avg_sal = mean(salary_2023)) %>% 
+  arrange(desc(avg_sal))
+```
+
+```{r}
+wnba %>% 
+  group_by(team) %>% 
+  summarise(num_players = n()) 
+
+# This does the same thing: 
+wnba %>% 
+  count(team)
+
+```
+```{r}
+wnba %>% 
+  count(college) %>% 
+  arrange(desc(n))
+
+# Alternative: 
+wnba %>% 
+  group_by(college) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n))
+```
+```{r}
+wnba %>% 
+  count(country)
+
+wnba %>% 
+  filter(country != "USA") %>% 
+  count()
+```
+```{r}
+wnba %>% 
+  filter(country == "USA") %>% 
+  summarise(avg_sal = mean(salary_2023)) 
+
+wnba %>% 
+  filter(country != "USA") %>% 
+  summarise(avg_sal = mean(salary_2023))
+
+# Alternately, we can recode a new column to say "USA" and "not USA"
+wnba2 <- wnba %>% 
+  mutate(usa_flag = if_else(country == "USA","USA","not USA"))
+
+wnba %>% 
+  group_by(usa_flag) %>% 
+  summarise(avg_sal = mean(salary_2023))
+```
+```{r}
+wnba %>% 
+  count(position) %>% 
+  arrange(desc(n))
+```
+
