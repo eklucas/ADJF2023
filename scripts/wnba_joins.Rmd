@@ -1,0 +1,57 @@
+---
+title: "WNBA JOINS"
+output: 
+---
+
+```{r}
+library(tidyverse)
+```
+
+Bring in the two tables:
+
+```{r}
+wnba <- read_csv("data/wnba2023.csv")
+
+stats <- read_csv("data/wnba_stats_2022.csv")
+```
+
+Practice different kinds of joins:
+
+```{r}
+# a left join returns all the rows from the "left" table (here `wnba`) and only matches from the "right" table (`stats`). Note that the number of rows returned matches the `wnba` table:
+wnba %>% left_join(stats, by = "player_name")
+```
+
+```{r}
+# a right join returns all the rows from the "right" table (`stats`) and only matches from the "left" table (`wnba`). Note that the number of rowns returned matches the `stats` table:
+wnba %>% right_join(stats, by = "player_name")
+```
+
+```{r}
+# an inner join returns only rows from both tables where there is a match; the row count is less than both tables and includes players who played in both seasons: 
+wnba %>% inner_join(stats, by = "player_name")
+```
+
+```{r}
+# a full join returns all the rows from both tables, regardless of whether there's a match. These results have more rows than both tables; it includes any player who played in either season. Note that for players who don't have matches in the other table, those columsn contain nulls:
+wnba %>% full_join(stats, by = "player_name")
+```
+
+```{r}
+# a semi join returns only rows that match (like an inner join) and only columns from the left table. In this case, all 2023 players who played in the previous season (and only the 9 columns from `wnba`): 
+wnba %>% semi_join(stats, by = "player_name")
+```
+
+```{r}
+# an anti join returns only rows that don't match and only columns from the left table. In this case, all 2023 players who didn't play the previous season (and only the 9 columns from `wnba`):
+wnba %>% anti_join(stats, by = "player_name")
+```
+
+Practice questions:
+
+1.  What's the 2022 field goal percentage for each of the three best paid players?
+2.  How does that compare to the average field goal percentage for all the 2022 players?
+3.  Which player who didn't play in 2022 has the highest salary?
+4.  Which team currently has the most players who had better than 30% three point shooting in 2022?
+5.  What's the average salary for those players?
+6.  Which Forward or Center player had the highest three-point percentage in 2022? (exclude any players who also play Guard positions).
