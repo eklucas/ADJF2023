@@ -170,7 +170,76 @@ mn_deaths %>%
 *CLEANUP*
 ```{r}
 # convert birthdate and deathdate
+mn_deaths <- mn_deaths %>% 
+  mutate(new_dob = mdy(BIRTHDATE),
+         new_dod = mdy(DEATHDATE))
 
+mn_deaths %>% 
+  relocate(new_dob, .after=BIRTHDATE)
 
+mn_deaths %>% 
+  count(HISPANICETHNICITY)
+
+# solution 1 (the long way)
+mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    HISPANICETHNICITY == "HISPANIC" ~ "H",
+    HISPANICETHNICITY == "NON-HISPANIC" ~ "N",
+    HISPANICETHNICITY == "NOT HISPANIC" ~ "N",
+    HISPANICETHNICITY == "NOT-HISPANIC" ~ "N",
+    HISPANICETHNICITY == "UNKNOWN" ~ "U",
+    HISPANICETHNICITY == "hispanic" ~ "H",
+    HISPANICETHNICITY == "non-hispanic" ~ "N",
+    HISPANICETHNICITY == "not hispanic" ~ "N"
+  ))
+
+# solution 2
+mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    HISPANICETHNICITY %in% c("HISPANIC", "hispanic") ~ "H",
+    HISPANICETHNICITY %in% c("NON-HISPANIC","NOT HISPANIC","NOT-HISPANIC","non-hispanic","not hispanic") ~ "N",
+    HISPANICETHNICITY == "UNKNOWN" ~ "U"
+  )) %>% 
+  count(HISPANICETHNICITY, new_hisp)
+
+# solution 3
+mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    str_to_upper(HISPANICETHNICITY) == "HISPANIC" ~ "H",
+    str_to_upper(HISPANICETHNICITY) %in% c("NON-HISPANIC","NOT HISPANIC","NOT-HISPANIC") ~ "N",
+    HISPANICETHNICITY == "UNKNOWN" ~ "U"
+  ))
+
+# solution 4
+mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    str_to_upper(str_sub(HISPANICETHNICITY,1,1)) == "H" ~ "H",
+    str_to_upper(str_sub(HISPANICETHNICITY,1,1)) == "N" ~ "N",
+    str_to_upper(str_sub(HISPANICETHNICITY,1,1)) == "U" ~ "U",
+  )) %>% 
+  count(HISPANICETHNICITY, new_hisp)
+
+# solution 5
+mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    grepl("^H", HISPANICETHNICITY, ignore.case=T) ~ "H",
+    grepl("^N", HISPANICETHNICITY, ignore.case=T) ~ "N",
+    TRUE ~ "U"
+  )) %>% 
+  count(HISPANICETHNICITY, new_hisp)
+
+# make new columns permanent
+mn_deaths <- mn_deaths %>% 
+  mutate(new_hisp = case_when(
+    grepl("^H", HISPANICETHNICITY, ignore.case=T) ~ "H",
+    grepl("^N", HISPANICETHNICITY, ignore.case=T) ~ "N",
+    TRUE ~ "U"
+  )) 
+
+```
+
+*save new mn_deaths file*
+```{r}
+write_csv(mn_deaths, "data/clean_mn_deaths.csv")
 ```
 
