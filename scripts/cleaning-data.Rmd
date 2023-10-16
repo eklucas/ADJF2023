@@ -1,0 +1,176 @@
+---
+title: "Cleaning strategies - Oct 11"
+output: 
+---
+
+LIBRARIES:
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(lubridate)
+library(readxl)
+```
+
+DATA (located in Files on Canvas):
+
+```{r}
+# deaths file h/t Mary Jo Webster, data editor of the Minnesota Star Tribune
+mn_deaths <- read_csv("data/MN_opiate_deaths.csv")
+
+# disney file h/t Andrew Ba Tran, investigative data reporter at the Washington Post
+disney <- read_csv("data/disney_movies_total_gross.csv")
+
+# use read_excel() to import an Excel spreadsheet
+salaries <- read_excel("data/Bloomington Salaries.xlsx", sheet=1)
+```
+
+TASKS: `disney`
+
+Check categorical variables for cleanliness: 
+```{r}
+disney %>% count(genre)
+disney %>% count(MPAA_rating)
+```
+
+1. convert the dollars column to numbers
+2. convert the date column to a true date
+
+```{r}
+disney <- disney %>% 
+  mutate(release_date = mdy(release_date))
+
+# alternative to coercing these columns into numbers on import (which works)
+disney <- disney %>% 
+  mutate(total_gross = parse_number(total_gross),
+         inflation_adjusted_gross = parse_number(inflation_adjusted_gross))
+```
+
+Which disney movie is the highest-grossing movie of all time? 
+```{r}
+disney %>% arrange(desc(inflation_adjusted_gross))
+```
+
+
+TASKS: `salaries`
+
+How many NAs are in the dataset? 
+Remember how to ignore NAs
+```{r}
+#How many NAs? 
+summary(salaries)
+
+#Ignore NAs in summary functions
+salaries %>% summarise(total = sum(overtime_oncall, na.rm=T))
+```
+
+Check categorical variables
+```{r}
+salaries %>% count(department)
+salaries %>% count(job_title)
+```
+
+1. Turn all "Utilities" sub-departments into one department
+
+```{r}
+salaries <- salaries %>% 
+  mutate(new_department = ifelse(grepl("Utilities",department,ignore.case=T),"Utilities",department), .after = department)
+```
+ 
+Which department has the most employees? 
+```{r}
+salaries %>% 
+  count(new_department) %>% 
+  arrange(desc(n))
+```
+
+Which department has the highest average salary?
+Which department has the highest average total compensation? 
+```{r}
+# using total compensation
+salaries %>% 
+  group_by(new_department) %>% 
+  summarise(avg_total = mean(total_comp)) %>% 
+  arrange(desc(avg_total))
+
+# what about salary?
+salaries %>% 
+  group_by(new_department) %>% 
+  summarise(avg_sal = mean(salary_2021, na.rm=T)) %>% 
+  arrange(desc(avg_sal))
+
+# check hourly pay
+salaries %>% 
+  group_by(new_department) %>% 
+  summarise(avg_hourly = mean(hourly_rate, na.rm=T)) %>% 
+  arrange(desc(avg_hourly))
+```
+
+Which department pays out the most overtime? 
+```{r}
+salaries %>% 
+  group_by(new_department) %>% 
+  summarise(tot_over = sum(overtime_oncall, na.rm=T)) %>% 
+  arrange(desc(tot_over))
+```
+
+Who got the most overtime in that department? 
+```{r}
+salaries %>% 
+  filter(new_department=="Police") %>% 
+  mutate(overtime_pct = overtime_oncall/total_comp) %>% 
+  arrange(desc(overtime_pct))
+```
+
+
+TASKS: `mn_deaths`
+
+- check if there are duplicates (using StateID & using names/dob)
+- check / clean up HISPANICETHNICITY
+- convert BIRTDATE & DEATHDATE
+- note: a subset of deaths related to opiates
+- check RACE, GENDER, PLACETYPE
+
+*Check for duplicates*
+```{r}
+mn_deaths %>% 
+  count(STATEID) %>% 
+  arrange(desc(n))
+# no duplicates in STATEID
+
+mn_deaths %>% 
+  count(FIRSTNAME, MIDDLENAME, LASTNAME, BIRTHDATE) %>% 
+  arrange(desc(n))
+# no duplicates in names / DOB
+
+mn_deaths %>% 
+  count(LASTNAME, BIRTHDATE) %>% 
+  arrange(desc(n))
+```
+
+*Check HISPANICETHNICITY*
+```{r}
+mn_deaths %>% 
+  count(HISPANICETHNICITY)
+# needs cleanup
+
+mn_deaths %>% 
+  count(RACE)
+# unique groups not matching Census but not messy
+
+mn_deaths %>% 
+  count(GENDER)
+# binary but clean
+
+mn_deaths %>% 
+  count(PLACETYPE)
+# not standardized
+```
+
+*CLEANUP*
+```{r}
+# convert birthdate and deathdate
+
+
+```
+
